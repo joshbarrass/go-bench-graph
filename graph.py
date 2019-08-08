@@ -39,8 +39,12 @@ Pipe the output of "go test -bench" into this command, e.g.:
     go test -bench ./... | graph.py <regex>
 
 Usage:
-    graph.py <regex>
+    graph.py [-o=<filename>] <regex>
+    graph.py [-s] <regex>
+    graph.py -h
 
+    -o --output-file=<filename>  Filename to write graph to.
+    -s --show-only               Show the graph instead of saving it
 """
 
 import sys
@@ -96,6 +100,13 @@ if __name__ == "__main__":
 
     regex = args["<regex>"]
     specific_regex, label_regex, graph_regex = format_regex(regex)
+
+    if args["--output-file"] is not None:
+        output_file = args["--output-file"]
+    else:
+        output_file = "graph.png"
+
+    show_only = args["--show-only"]
 
     ## data["graph"]["label"] = np.array
     data = {}
@@ -182,5 +193,7 @@ if __name__ == "__main__":
             ax.set_ylabel("Time Taken, $ns$")
             ax.set_xscale("log")
 
-    plt.savefig("graph.png")
-    # plt.show()
+    if show_only:
+        plt.show()
+    else:
+        plt.savefig(output_file)
