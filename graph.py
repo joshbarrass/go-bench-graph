@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
+# pylint: disable=invalid-name
+
 import sys
 import re
 
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-from matplotlib.ticker import FormatStrFormatter
 
 ## create regex for getting data
 data_regex = re.compile(r"""(\d+)\s*([\d\.]+) ns\/op$""")
