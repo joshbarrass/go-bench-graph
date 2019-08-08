@@ -1,28 +1,25 @@
 #!/usr/bin/env python3
 
-"""
-
-"""
-
 import sys
 import re
 
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+from matplotlib.ticker import FormatStrFormatter
 
 ## create regex for getting data
-DATA_REGEX = re.compile(r"""(\d+)\s*([\d\.]+) ns\/op$""")
+data_regex = re.compile(r"""(\d+)\s*([\d\.]+) ns\/op$""")
 
-## N_VALUE_REGEX is used to get the value of N, etc.
-N_VALUE_REGEX = re.compile(r"""^BenchmarkIPSizes\/[\w_]+,n=(\d+)\/""")
+## specific_regex is used to get the value of N, etc.
+specific_regex = re.compile(r"""^BenchmarkIPSizes\/[\w_]+,n=(\d+)\/""")
 
-## LABEL_REGEX is used to get the label for the line
-LABEL_REGEX = re.compile(r"""^BenchmarkIPSizes\/([\w_]+),n=\d+\/""")
+## label_regex is used to get the label for the line
+label_regex = re.compile(r"""^BenchmarkIPSizes\/([\w_]+),n=\d+\/""")
 
-## GRAPH_REGEX is used to differentiate between different graphs
+## graph_regex is used to differentiate between different graphs
 ## set to None if you only have one graph
-GRAPH_REGEX = re.compile(r"""^BenchmarkIPSizes\/[\w_]+,n=\d+\/([\w_]+)""")
+graph_regex = re.compile(r"""^BenchmarkIPSizes\/[\w_]+,n=\d+\/([\w_]+)""")
 
 if __name__ == "__main__":
 
@@ -32,7 +29,7 @@ if __name__ == "__main__":
     ## read data from stdin (so tests can be piped in)
     for line in sys.stdin:
         ## identify the data
-        match = DATA_REGEX.search(line)
+        match = data_regex.search(line)
         if match is None:
             print("Ignoring non-matching line:", line)
             continue
@@ -41,7 +38,7 @@ if __name__ == "__main__":
         to_add = [float(d) for d in list(groups)]
 
         ## identify the N value
-        match = N_VALUE_REGEX.search(line)
+        match = specific_regex.search(line)
         if match is None:
             print("Ignoring non-matching line:", line)
             continue
@@ -51,7 +48,7 @@ if __name__ == "__main__":
         to_add = [N]+to_add
 
         ## identify the label
-        match = LABEL_REGEX.search(line)
+        match = label_regex.search(line)
         if match is None:
             print("Ignoring non-matching line:", line)
             continue
@@ -60,8 +57,8 @@ if __name__ == "__main__":
         label = groups[0].replace("_", " ")
 
         ## identify the graph name
-        if GRAPH_REGEX is not None:
-            match = GRAPH_REGEX.search(line)
+        if graph_regex is not None:
+            match = graph_regex.search(line)
             if match is None:
                 print("Ignoring non-matching line:", line)
                 continue
@@ -87,10 +84,10 @@ if __name__ == "__main__":
     ###################
     # generate a plot #
     ###################
-    fig = plt.figure(figsize=(12 * len(data), 12))
+    fig = plt.figure(figsize=(12*len(data), 12))
 
     ## construct a gridspec for this data
-    gs = gridspec.GridSpec(1, len(data))
+    gs = gridspec.GridSpec(1,len(data))
 
     ## do the graphs in graph name order
     graph_names = sorted([k for k in data.keys()], key=lambda x:x.lower())
