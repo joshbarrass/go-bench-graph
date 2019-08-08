@@ -11,15 +11,15 @@ from matplotlib.ticker import FormatStrFormatter
 ## create regex for getting data
 data_regex = re.compile(r"""(\d+)\s*([\d\.]+) ns\/op$""")
 
-## specific_regex is used to get information specific to this test, e.g. the series label, the value of N, etc.
-specific_regex = re.compile(r"""^BenchmarkIPSizes\/([\w_]+),n=(\d+)\/""")
-label_index = 0
-n_index = not label_index ## if label_index is 1, n_index is automatically 0
+## specific_regex is used to get the value of N, etc.
+specific_regex = re.compile(r"""^BenchmarkIPSizes\/[\w_]+,n=(\d+)\/""")
+
+## label_regex is used to get the label for the line
+label_regex = re.compile(r"""^BenchmarkIPSizes\/([\w_]+),n=\d+\/""")
 
 ## graph_regex is used to differentiate between different graphs
 ## set to None if you only have one graph
 graph_regex = re.compile(r"""^BenchmarkIPSizes\/[\w_]+,n=\d+\/([\w_]+)""")
-graph_index = 0
 
 if __name__ == "__main__":
 
@@ -37,16 +37,24 @@ if __name__ == "__main__":
         
         to_add = [float(d) for d in list(groups)]
 
-        ## identify the label and N value
+        ## identify the N value
         match = specific_regex.search(line)
         if match is None:
             print("Ignoring non-matching line:", line)
             continue
         groups = match.groups()
 
-        label = groups[label_index].replace("_", " ")
-        N = float(groups[n_index])
+        N = float(groups[0])
         to_add = [N]+to_add
+
+        ## identify the label
+        match = label_regex.search(line)
+        if match is None:
+            print("Ignoring non-matching line:", line)
+            continue
+        groups = match.groups()
+
+        label = groups[0].replace("_", " ")
 
         ## identify the graph name
         if graph_regex is not None:
@@ -56,7 +64,7 @@ if __name__ == "__main__":
                 continue
             groups = match.groups()
 
-            graph = groups[graph_index].replace("_", " ")
+            graph = groups[0].replace("_", " ")
         else:
             graph = ""
             
